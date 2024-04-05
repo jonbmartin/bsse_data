@@ -2,8 +2,10 @@ import numpy as np
 import sigpy.mri as mr
 import sigpy.plot as pl
 import matplotlib.pyplot as pyplot
-import sigpy.mri.rf as rf
+#import sigpy.mri.rf as rf
 import scipy.io as sio
+import pulpy.rf as pprf
+import pulpy.sim as ppsim
 
 n_offres = 360 * 1
 input = np.repeat([[0, 0, 1]], n_offres, axis=0)
@@ -22,14 +24,14 @@ use_refined_pulse = True
 
 if newsim:
     # DESIGN THE EXCITATION PULSE
-    rfp_bs, rfp, _ = rf.dz_bssel_rf(dt=dt_ex, tb=tb, ndes=128, ptype='ex', flip=np.pi / 2, pbw=pbw,
+    rfp_bs, rfp, _ = pprf.dz_bssel_rf(dt=dt_ex, tb=tb, ndes=128, ptype='ex', flip=np.pi / 2, pbw=pbw,
                             pbc=[pbc], d1e=d1e, d2e=d2e,
                             rampfilt=True, bs_offset=offset)
 
     full_ex = rfp + rfp_bs
     pulse_dur = np.size(full_ex)*dt_ex
     b1 = np.arange(0, 3, 0.02)  # gauss, b1 range to sim over
-    a, b = rf.abrm_hp(
+    a, b = ppsim.abrm_hp(
         2 * np.pi * 4258 * dt_ex * full_ex.reshape((1, np.size(full_ex))),
         np.zeros(np.size(full_ex)),
         np.array([[1]]), 0, b1.reshape(np.size(b1), 1))
@@ -43,7 +45,7 @@ if newsim:
     pyplot.show()
 
     # DESIGN THE REFOCUSING PULSE AND REWINDER
-    rfp_bs_inv, rfp_inv, rw180 = rf.dz_bssel_rf(dt=dt_ex, tb=tb, ndes=128,
+    rfp_bs_inv, rfp_inv, rw180 = pprf.dz_bssel_rf(dt=dt_ex, tb=tb, ndes=128,
                                                 ptype='se', flip=np.pi,
                                                 pbw=pbw, pbc=[pbc], d1e=d1e,
                                                 d2e=d2e, rampfilt=False,
@@ -73,11 +75,11 @@ if newsim:
     pyplot.legend(['refined', 'unrefined'])
     pyplot.show()
 
-    a180_unrefined, b180_unrefined = rf.abrm_hp(2 * np.pi * 4258 * dt_ex * unrefined_bs,
+    a180_unrefined, b180_unrefined = ppsim.abrm_hp(2 * np.pi * 4258 * dt_ex * unrefined_bs,
                             np.zeros(np.size(rfp_bs_inv.T)),
                             np.array([[1]]), 0, b1.reshape(len(b1), 1))
 
-    a180, b180 = rf.abrm_hp(2 * np.pi * 4258 * dt_ex * full_bs,
+    a180, b180 = ppsim.abrm_hp(2 * np.pi * 4258 * dt_ex * full_bs,
                             np.zeros(np.size(full_bs.T)),
                             np.array([[1]]), 0, b1.reshape(len(b1), 1))
 

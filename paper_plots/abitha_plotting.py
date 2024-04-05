@@ -112,8 +112,8 @@ full_pulse = np.squeeze(rfp_bs )
 T = dt * np.size(full_pulse)*1000
 t = np.linspace(0,1, np.size(full_pulse))*T
 
-b1_passband = 1
-b1_stopband = 1
+b1_passband = 0.55
+b1_stopband = 1.4
 b1_multiphoton = 1
 
 a, b = abrm_hp_collect(2*np.pi*4258*dt*full_pulse.reshape((1, np.size(full_pulse)))*b1_passband, np.zeros(np.size(full_pulse)),
@@ -149,7 +149,7 @@ ax1.set_xlim(0, np.max(t))
 ax1.set_ylim(0, 1.25)
 plt.setp(ax1.get_xticklabels(),visible=True)
 
-ax2.set_title(r'B)  $B_1^+$=0.17 mT (stopband)')
+ax2.set_title(r'B)  $B_1^+$=0.15 mT')
 ax2.set_xlim3d(-1, 1)
 ax2.set_ylim3d(-1, 1)
 ax2.set_zlim3d(-1, 1)
@@ -161,7 +161,7 @@ ax2.set_ylabel('$M_y$')
 ax2.set_zlabel('$M_z$')
 
 
-ax3.set_title(r'C)  $B_1^+$=0.14 mT (passband)')
+ax3.set_title(r'C)  $B_1^+$=0.055 mT')
 ax3.set_xlim3d(-1, 1)
 ax3.set_ylim3d(-1, 1)
 ax3.set_zlim3d(-1, 1)
