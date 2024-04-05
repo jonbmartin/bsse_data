@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 # import sys
 # sys.path.insert(1,'sigpy-rf-master/')
-import sigpy.mri.rf as rf
-from sigpy import backend
+#import sigpy.mri.rf as rf
+#from sigpy import backend
+import pulpy.rf as pprf
 import mpl_toolkits.mplot3d.axes3d as p3
 from matplotlib.gridspec import GridSpec
 
@@ -18,47 +19,45 @@ matplotlib.rc('font', **font)
 
 
 def abrm_hp_collect(rf, gamgdt, xx, dom0dt=0, b1=None):
-    device = backend.get_device(rf)
-    xp = device.xp
+
 
     if b1 is None:
         rf = rf.flatten()
 
-    with device:
-        Ns = xx.shape[0] # Ns: # of spatial locs
-        Nt = gamgdt.shape[0]  # Nt: # time points
-        a_v = []
-        b_v = []
+    Ns = xx.shape[0] # Ns: # of spatial locs
+    Nt = gamgdt.shape[0]  # Nt: # time points
+    a_v = []
+    b_v = []
 
-        a = xp.ones((Ns,))
-        b = xp.zeros((Ns,))
+    a = np.ones((Ns,))
+    b = np.zeros((Ns,))
 
-        for ii in xp.arange(Nt):
-            # apply phase accural
-            z = xp.exp(-1j * (xx * gamgdt[ii, ] + dom0dt))
-            b = b * z
-
-            # apply rf
-            if b1 is None:
-                C = xp.cos(xp.abs(rf[ii]) / 2)
-                S = 1j * xp.exp(1j * xp.angle(rf[ii])) * xp.sin(xp.abs(rf[ii]) / 2)
-            else:
-                b1rf = b1 @ rf[:, ii]
-                C = xp.cos(xp.abs(b1rf) / 2)
-                S = 1j * xp.exp(1j * xp.angle(b1rf)) * xp.sin(xp.abs(b1rf) / 2)
-            at = a * C - b * xp.conj(S)
-            bt = a * S + b * C
-            a_v.append(at)
-            b_v.append(bt)
-
-            a = at
-            b = bt
-
-        z = xp.exp(1j / 2 * (xx * xp.sum(gamgdt, axis=0) + Nt * dom0dt))
-        a = a * z
+    for ii in np.arange(Nt):
+        # apply phase accural
+        z = np.exp(-1j * (xx * gamgdt[ii, ] + dom0dt))
         b = b * z
 
-        return a_v, b_v
+        # apply rf
+        if b1 is None:
+            C = np.cos(np.abs(rf[ii]) / 2)
+            S = 1j * np.exp(1j * np.angle(rf[ii])) * np.sin(np.abs(rf[ii]) / 2)
+        else:
+            b1rf = b1 @ rf[:, ii]
+            C = np.cos(np.abs(b1rf) / 2)
+            S = 1j * np.exp(1j * np.angle(b1rf)) * np.sin(np.abs(b1rf) / 2)
+        at = a * C - b * np.conj(S)
+        bt = a * S + b * C
+        a_v.append(at)
+        b_v.append(bt)
+
+        a = at
+        b = bt
+
+    z = np.exp(1j / 2 * (xx * np.sum(gamgdt, axis=0) + Nt * dom0dt))
+    a = a * z
+    b = b * z
+
+    return a_v, b_v
 
 
 def get_3d_motion(a, b):
@@ -102,7 +101,7 @@ ax3.view_init(25, 250)
 
 
 
-rfp_bs, rfp_ss, _ = rf.dz_bssel_rf(dt=dt, tb=2, ndes=256, ptype='inv', flip=np.pi, pbw=pbw,
+rfp_bs, rfp_ss, _ = pprf.dz_bssel_rf(dt=dt, tb=2, ndes=256, ptype='inv', flip=np.pi, pbw=pbw,
                                    pbc=[pbc], d1e=0.1, d2e=0.01,
                                    rampfilt=False, bs_offset=bs_off)
 
